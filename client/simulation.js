@@ -6,6 +6,7 @@ const ENUM = {
   infected: 1,
   recovered: 2,
   dead: 3,
+  wall: 10,
 }
 
 export const DEFAULTS = {
@@ -43,30 +44,57 @@ export const withSimulation = ConfigHook('simulation', {
 export default class Simulation {
   constructor(options = {}) {
     this.options = defaults({}, options, DEFAULTS)
+    this.logs = []
 
     this.max_tries = this.options.people * 2
+    this.wall_width = 3
 
-    this.H = this.W = this.options.size
+    this.H = this.W = this.options.size + this.wall_width
 
     this.WH = this.H * this.W
 
     this.reset()
   }
 
+  index2x = (index) => index % this.W
+  index2y = (index) => Math.floor(index / this.W)
+  index2xy = (index) => [this.index2x(index), this.index2y(index)]
+  xy2index = (xy) => xy[0] + xy[1] * this.W
+
+  log = (...args) =>
+    this.logs.push({ type: 'log', date: new Date().valueOf(), args: args })
+
+  makeWall = (xy) => {
+    const index = this.xy2index(xy)
+    if (this.data.entities[index]) {
+      return this.log('tried to make wall at occupied square', index)
+    }
+    this.data.entities[index] = ENUM.wall
+    this.data.walls.push(index)
+  }
+  makeWalls() {
+    range(this.wall_width).forEach((width) => {
+      range(this.W).forEach((x) => this.makeWall([x, width]))
+      range(this.H).forEach((y) => this.makeWall([width, y]))
+    })
+  }
+
   reset() {
     this.data = {
       ids: range(this.options.people),
-      xy: {},
+      walls: [],
       entities: {},
     }
+
+    this.makeWalls()
+
     this.data.ids.forEach((id) => {
-      const xy = this.getEmptyXY()
-      this.data.xy[xy] = id
+      const index = this.getEmptyIndex()
       this.data.entities[id] = {
         id,
         status: ENUM.healthy,
-        xy,
-        dxy: this.getRandomDXY(),
+        index,
+        dindex: this.getRandomDindex(),
       }
     })
 
@@ -87,48 +115,59 @@ export default class Simulation {
     }
   }
 
-  getEmptyXY() {
+  getEmptyIndex() {
     let i = this.max_tries
-    let xy
+    let index
     while (i--) {
-      xy = Math.floor(Math.random() * this.WH)
-      if (!this.data.xy[xy]) {
-        return xy
+      index = Math.floor(Math.random() * this.WH)
+      if (!this.data.entities[index]) {
+        return index
       }
     }
-    console.error('Unable to find empty xy. Last try:', xy)
+    console.error('Unable to find empty index. Last try:', index)
   }
 
-  getRandomDXY() {
+  getRandomDindex() {
     const dy = Math.floor(Math.random() * 3) - 1
     const dx = Math.floor(Math.random() * 3) - 1
     return dx + this.W * dy
   }
 
-  getX(id) {
-    return this.data.entities[id].xy % this.W
-  }
-
-  getY(id) {
-    return Math.floor(this.data.entities[id].xy / this.W)
-  }
-
   getScatter() {
-    return this.data.ids.map((id) => {
+    const { entities } = this.data
+    let symbol = 'circle'
+    let size = 7
+    const fill = (id) =>
+      entities[id].status === ENUM.infected ? '#C62828' : '#81D4FA'
+    const scatter = this.data.ids.map((id) => {
+      const [x, y] = this.index2xy(entities[id].index)
       return {
-        x: this.getX(id),
-        y: this.getY(id),
-        shape: 'square',
-        size: 7,
-        fill:
-          this.data.entities[id].status === ENUM.infected
-            ? '#C62828'
-            : '#81D4FA',
+        x,
+        y,
+        symbol,
+        size,
+        fill: fill(id),
       }
     })
+
+    symbol = 'square'
+    size = 7
+    this.data.walls.forEach((index) => {
+      const [x, y] = this.index2xy(index)
+      if (x < 2 || y < 2) {
+        return
+      }
+      scatter.push({
+        x,
+        y,
+        symbol,
+        size,
+      })
+    })
+    return scatter
   }
 
   getDomain() {
-    return { x: [0, this.W], y: [0, this.H] }
+    return { x: [2, this.W], y: [2, this.H] }
   }
 }
