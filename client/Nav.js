@@ -7,13 +7,13 @@ export default function Nav() {
     <header className={css.nav.outer()}>
       <section className={css.nav.section()}>
         <Link to="/" className={css.nav.brand()}>
-          Project Pandem
+          YACS
         </Link>
       </section>
       <section className={css.nav.section('flex items-center')}>
         <a
           className="text-blue-500 fa fa-github"
-          href="https://github.com/chriscauley/pandem/"
+          href="https://github.com/chriscauley/yacs/"
         />
       </section>
     </header>

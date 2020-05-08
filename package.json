@@ -1,5 +1,5 @@
 {
-  "name": "pandem",
+  "name": "yacs",
   "main": "client/index.html",
   "author": "chriscauley <chris@lablackey.com>",
   "license": "MIT",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chriscauley/pandem.git"
+    "url": "git+https://github.com/chriscauley/yacs.git"
   },
   "dependencies": {
     "@babel/core": "^7.0.0-0",
