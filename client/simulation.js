@@ -41,6 +41,7 @@ export const withSimulation = ConfigHook('simulation', {
   actions,
 })
 
+
 export default class Simulation {
   constructor(options = {}) {
     this.options = defaults({}, options, DEFAULTS)
@@ -66,12 +67,13 @@ export default class Simulation {
 
   makeWall = (xy) => {
     const index = this.xy2index(xy)
-    if (this.data.entities[index]) {
+    if (this.data.board[index]) {
       return this.log('tried to make wall at occupied square', index)
     }
-    this.data.entities[index] = ENUM.wall
+    this.data.board[index] = ENUM.wall
     this.data.walls.push(index)
   }
+
   makeWalls() {
     range(this.wall_width).forEach((width) => {
       range(this.W).forEach((x) => this.makeWall([x, width]))
@@ -84,13 +86,14 @@ export default class Simulation {
       ids: range(this.options.people),
       walls: [],
       entities: {},
+      board: {}
     }
 
     this.makeWalls()
 
     this.data.ids.forEach((id) => {
       const index = this.getEmptyIndex()
-      this.data.entities[id] = {
+      this.data.board[index] = this.data.entities[id] = {
         id,
         status: ENUM.healthy,
         index,
@@ -101,8 +104,7 @@ export default class Simulation {
     let to_infect = this.options.infected
     let tries = this.max_tries
     while (to_infect && tries) {
-      const index = Math.floor(Math.random() * this.data.ids.length)
-      const id = this.data.ids[index]
+      const id = this.data.ids[Math.floor(Math.random() * this.data.ids.length)]
       const entity = this.data.entities[id]
       if (entity.status === ENUM.healthy) {
         entity.status = ENUM.infected
@@ -120,7 +122,7 @@ export default class Simulation {
     let index
     while (i--) {
       index = Math.floor(Math.random() * this.WH)
-      if (!this.data.entities[index]) {
+      if (!this.data.board[index]) {
         return index
       }
     }
