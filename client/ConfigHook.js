@@ -8,7 +8,8 @@ class ConfigForm extends React.Component {
   onSubmit = (formData) => this.props.config.actions.save(formData)
   onChange = (formData) => this.setState({ formData })
   render() {
-    const { schema, uiSchema, formData, ...props } = this.props.config
+    const { config, ...props } = this.props
+    const { schema, uiSchema, formData } = config
     return (
       <Form
         formData={this.state.formData || formData}
