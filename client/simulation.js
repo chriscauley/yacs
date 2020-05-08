@@ -1,6 +1,8 @@
 import { defaults, range } from 'lodash'
 import ConfigHook from './ConfigHook'
 
+const mod = (a, b) => ((a % b) + b) % b
+
 const ENUM = {
   healthy: 0,
   infected: 1,
@@ -31,7 +33,11 @@ export const schema = {
 const actions = {
   onSave(store, formData) {
     const simulation = new Simulation(formData)
-    store.setState({ simulation })
+    store.setState({ step: 0, simulation })
+  },
+  step(store) {
+    store.state.simulation.step()
+    store.setState({ step: store.state.step + 1 })
   },
 }
 
@@ -40,7 +46,6 @@ export const withSimulation = ConfigHook('simulation', {
   schema,
   actions,
 })
-
 
 export default class Simulation {
   constructor(options = {}) {
@@ -62,6 +67,9 @@ export default class Simulation {
   index2xy = (index) => [this.index2x(index), this.index2y(index)]
   xy2index = (xy) => xy[0] + xy[1] * this.W
 
+  dxy2dindex = (dxy) => dxy[0] + dxy[1] * this.W
+  dindex2dxy = (dindex) => [mod(dindex, this.W), Math.floor(dindex / this.W)]
+
   log = (...args) =>
     this.logs.push({ type: 'log', date: new Date().valueOf(), args: args })
 
@@ -72,6 +80,15 @@ export default class Simulation {
     }
     this.data.board[index] = ENUM.wall
     this.data.walls.push(index)
+  }
+
+  makeDindexes() {
+    const dis = [1, 0, -1]
+    this.dindexes = []
+    dis.forEach((dx) =>
+      dis.forEach((dy) => this.dindexes.push(this.dxy2dindex([dx, dy]))),
+    )
+    this.dindexes = this.dindexes.filter(Boolean)
   }
 
   makeWalls() {
@@ -86,10 +103,11 @@ export default class Simulation {
       ids: range(this.options.people),
       walls: [],
       entities: {},
-      board: {}
+      board: {},
     }
 
     this.makeWalls()
+    this.makeDindexes()
 
     this.data.ids.forEach((id) => {
       const index = this.getEmptyIndex()
@@ -130,9 +148,12 @@ export default class Simulation {
   }
 
   getRandomDindex() {
-    const dy = Math.floor(Math.random() * 3) - 1
-    const dx = Math.floor(Math.random() * 3) - 1
-    return dx + this.W * dy
+    return this.dindexes[Math.floor(Math.random() * this.dindexes.length)]
+  }
+
+  flipDindex(dindex) {
+    const dxy = this.dindex2dxy(dindex)
+    return this.dxy2dindex([-dxy[0], -dxy[1]])
   }
 
   getScatter() {
@@ -171,5 +192,25 @@ export default class Simulation {
 
   getDomain() {
     return { x: [2, this.W], y: [2, this.H] }
+  }
+
+  step() {
+    this.data.ids.forEach((id) => {
+      const entity = this.data.entities[id]
+      const { index, dindex } = entity
+      const new_index = mod(index + dindex, this.WH)
+
+      if (!dindex) {
+        return // not currently moving
+      }
+
+      if (!this.data.board[new_index]) {
+        entity.index = new_index
+        delete this.data.board[index]
+        this.data.board[new_index] = entity
+      } else {
+        entity.dindex = this.flipDindex(dindex)
+      }
+    })
   }
 }
