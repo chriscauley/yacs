@@ -16,7 +16,11 @@ export default withSimulation(function Home(props) {
         Step!
       </button>
       <div style={{ width: 500, height: 500 }}>
-        <VictoryChart width={500} height={500}>
+        <VictoryChart
+          width={500}
+          height={500}
+          padding={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        >
           <VictoryAxis
             tickFormat={() => ''}
             style={{ axis: { stroke: 'none' } }}
