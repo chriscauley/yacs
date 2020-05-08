@@ -1,4 +1,5 @@
 import { defaults, range } from 'lodash'
+import ConfigHook from './ConfigHook'
 
 const ENUM = {
   healthy: 0,
@@ -7,16 +8,41 @@ const ENUM = {
   dead: 3,
 }
 
+export const DEFAULTS = {
+  people: 5,
+  infected: 1,
+  lethality: 0.1,
+  duration: 5,
+  size: 30,
+}
+
+export const schema = {
+  type: 'object',
+  properties: {
+    people: { type: 'integer' },
+    infected: { type: 'integer' },
+    lethality: { type: 'number' },
+    duration: { type: 'integer' },
+    size: { type: 'integer' },
+  },
+}
+
+const actions = {
+  onSave(store, formData) {
+    const simulation = new Simulation(formData)
+    store.setState({ simulation })
+  },
+}
+
+export const withSimulation = ConfigHook('simulation', {
+  initial: DEFAULTS,
+  schema,
+  actions,
+})
+
 export default class Simulation {
   constructor(options = {}) {
-    this.options = defaults({}, options, {
-      people: 5,
-      infected: 1,
-      lethality: 0.1,
-      duration: 5,
-      radius: 0.01,
-      size: 30,
-    })
+    this.options = defaults({}, options, DEFAULTS)
 
     this.max_tries = this.options.people * 2
 
@@ -94,6 +120,10 @@ export default class Simulation {
         y: this.getY(id),
         shape: 'square',
         size: 7,
+        fill:
+          this.data.entities[id].status === ENUM.infected
+            ? '#C62828'
+            : '#81D4FA',
       }
     })
   }

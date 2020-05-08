@@ -1,20 +1,32 @@
 import React from 'react'
-import Simulation from './simulation'
+import { withSimulation } from './simulation'
 import { VictoryScatter, VictoryChart, VictoryAxis } from 'victory'
 
-const simulation = new Simulation()
+export default withSimulation(function Home(props) {
+  const { simulation } = props.config
+  if (!simulation) {
+    return 'Start a simulation!!'
+  }
+  const style = { data: { fill: (o) => o.datum.fill } }
 
-export default function Home(_props) {
   return (
     <div style={{ width: 500, height: 500 }}>
       <VictoryChart width={500} height={500}>
-        <VictoryAxis tickFormat={() => ''} />
-        <VictoryAxis dependentAxis tickFormat={() => ''} />
+        <VictoryAxis
+          tickFormat={() => ''}
+          style={{ axis: { stroke: 'none' } }}
+        />
+        <VictoryAxis
+          dependentAxis
+          tickFormat={() => ''}
+          style={{ axis: { stroke: 'none' } }}
+        />
         <VictoryScatter
           data={simulation.getScatter()}
           domain={simulation.getDomain()}
+          style={style}
         />
       </VictoryChart>
     </div>
   )
-}
+})
