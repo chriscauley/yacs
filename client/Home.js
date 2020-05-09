@@ -8,18 +8,17 @@ export default withSimulation(function Home(props) {
   if (!simulation) {
     return 'Start a simulation!!'
   }
+  const { W, H } = simulation.board
   const style = { data: { fill: (o) => o.datum.fill } }
-
   return (
     <div>
       <button className={css.button()} onClick={actions.step}>
         Step!
       </button>
-      <div style={{ width: 500, height: 500 }}>
+      <div style={{ width: 500, height: 500, background: '#f8f8f8' }}>
         <VictoryChart
-          animate={{ duration: 200, easing: 'linear' }}
-          width={500}
-          height={500}
+          width={W}
+          height={H}
           padding={{ top: 0, bottom: 0, left: 0, right: 0 }}
         >
           <VictoryAxis
