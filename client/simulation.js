@@ -2,6 +2,7 @@ import { defaults, range, sortBy } from 'lodash'
 import ENUM from './enum'
 import ConfigHook from './ConfigHook'
 import Board from './board/continuous'
+import sprites from './sprite'
 
 const MAX_TRIES = 50
 
@@ -30,11 +31,15 @@ export const schema = {
 
 const actions = {
   onSave(store, formData) {
+    if (store.state.simulation) {
+      store.state.simulation.stop()
+    }
     const simulation = new Simulation(formData)
     store.setState({ step: 0, simulation })
     window.INTERVAL = setInterval(() => store.actions.step(), 10)
   },
   step(store) {
+    const start = new Date().valueOf()
     store.state.simulation.step()
     store.setState({ step: store.state.step + 1 })
   },
@@ -52,6 +57,16 @@ export default class Simulation {
     this.turn = 0
     this.duration = this.options.duration / this.options.dt
     this.reset()
+
+    this.temp_canvas = document.createElement('canvas')
+    this.temp_canvas.width = this.board.W + this.options.radius * 2
+    this.temp_canvas.height = this.board.H + this.options.radius * 2
+    this.frame = 0
+    requestAnimationFrame(this.draw)
+  }
+
+  stop() {
+    cancelAnimationFrame(this.animationFrame)
   }
 
   reset() {
@@ -174,6 +189,7 @@ export default class Simulation {
           Math.random() < this.options.lethality ? ENUM.dead : ENUM.recovered
       }
     })
+    this.draw()
   }
 
   collide(p1, p2, displacement) {
@@ -224,5 +240,21 @@ export default class Simulation {
       counts[key] = this.board.pieces.filter((p) => p.status === value).length
     })
     return counts
+  }
+
+  draw = () => {
+    this.frame++
+    if (!this.canvas || this.frame % 2 !== 0) {
+      return
+    }
+    const ctx = this.temp_canvas.getContext('2d')
+    const s = 10
+    ctx.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height)
+    this.board.pieces.forEach((p) => {
+      ctx.drawImage(sprites[p.status], Math.floor(p.x), Math.floor(p.y), s, s)
+    })
+    const ctx2 = this.canvas.getContext('2d')
+    ctx2.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height)
+    ctx2.drawImage(this.temp_canvas, 0, 0)
   }
 }

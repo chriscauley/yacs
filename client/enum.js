@@ -3,5 +3,4 @@ export default {
   infected: 1,
   recovered: 2,
   dead: 3,
-  wall: 10,
 }
