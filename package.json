@@ -18,6 +18,7 @@
     "@babel/preset-env": "^7.9.5",
     "@unrest/core": "^0.0.1",
     "@unrest/css": "^0.0.3",
+    "@unrest/random": "^0.0.2",
     "@unrest/react-jsonschema-form": "^0.0.1",
     "@unrest/storage": "^0.1.0",
     "@unrest/tailwind": "^0.0.1",

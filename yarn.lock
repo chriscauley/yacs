@@ -1280,6 +1280,11 @@
   resolved "https://registry.yarnpkg.com/@unrest/css/-/css-0.0.3.tgz#97404edf53d412daf8651ff7c995d9aafeba55f6"
   integrity sha512-W6PA/XMD3+PVI+6+ZnobVO1fsqvz4876JdcCsqSp7PcOuOStvGrcr00VmZuOzKcjIdkGhWNFVYPfsmVDZgXJ/A==
 
+"@unrest/random@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@unrest/random/-/random-0.0.2.tgz#18b9541043accd36fb39ebd0286ff154564b8c70"
+  integrity sha512-apUNVqvzPO1QLdAIkDHXn79dy1MlYyopQWBva9+sZ13HomIwRin0KvjgUSt+Fi997DWsqI+MJ7kLTRfVQvA1Dw==
+
 "@unrest/react-jsonschema-form@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@unrest/react-jsonschema-form/-/react-jsonschema-form-0.0.1.tgz#d8cbabb02e06781d23fd9ec0b1a986db865b6d47"
