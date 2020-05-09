@@ -57,14 +57,16 @@ export default class Simulation {
     this.turn = 0
     this.duration = this.options.duration / this.options.dt
     this.reset()
+  }
 
+  animate() {
+    this.sprites = sprites()
     this.temp_canvas = document.createElement('canvas')
     this.temp_canvas.width = this.board.W + this.options.radius * 2
     this.temp_canvas.height = this.board.H + this.options.radius * 2
     this.frame = 0
-    requestAnimationFrame(this.draw)
+    this.animationFrame = requestAnimationFrame(this.draw)
   }
-
   stop() {
     cancelAnimationFrame(this.animationFrame)
   }
@@ -248,10 +250,10 @@ export default class Simulation {
       return
     }
     const ctx = this.temp_canvas.getContext('2d')
-    const s = 10
+    const s = this.options.radius * 2
     ctx.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height)
-    this.board.pieces.forEach((p) => {
-      ctx.drawImage(sprites[p.status], Math.floor(p.x), Math.floor(p.y), s, s)
+    this.pieces.forEach(({ status, x, y }) => {
+      ctx.drawImage(this.sprites[status], Math.floor(x), Math.floor(y), s, s)
     })
     const ctx2 = this.canvas.getContext('2d')
     ctx2.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height)
