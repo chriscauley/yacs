@@ -10,11 +10,20 @@ export default withSimulation(function Home(props) {
   }
   const { W, H } = simulation.board
   const style = { data: { fill: (o) => o.datum.fill } }
+  const counts = Object.entries(simulation.getCounts())
+  counts.sort()
   return (
     <div>
       <button className={css.button()} onClick={actions.step}>
         Step!
       </button>
+      <div>
+        {counts.map((c) => (
+          <div key={c[0]}>
+            {c[0]}: {c[1]}
+          </div>
+        ))}
+      </div>
       <div style={{ width: 500, height: 500, background: '#f8f8f8' }}>
         <VictoryChart
           width={W}

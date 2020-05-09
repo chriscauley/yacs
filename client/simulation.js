@@ -9,10 +9,10 @@ export const DEFAULTS = {
   people: 5,
   infected: 1,
   lethality: 0.1,
-  duration: 5,
+  duration: 10,
   size: 500,
   radius: 7,
-  steps: 1,
+  dt: 1,
 }
 
 export const schema = {
@@ -20,11 +20,11 @@ export const schema = {
   properties: {
     people: { type: 'integer' },
     infected: { type: 'integer' },
-    // lethality: { type: 'number' },
-    // duration: { type: 'integer' },
+    lethality: { type: 'number' },
+    duration: { type: 'integer' },
     size: { type: 'integer' },
     radius: { type: 'integer' },
-    steps: { type: 'number' },
+    dt: { type: 'number' },
   },
 }
 
@@ -32,7 +32,7 @@ const actions = {
   onSave(store, formData) {
     const simulation = new Simulation(formData)
     store.setState({ step: 0, simulation })
-    window.INTERVAL = setInterval(() => store.actions.step(), 20)
+    window.INTERVAL = setInterval(() => store.actions.step(), 10)
   },
   step(store) {
     store.state.simulation.step()
@@ -49,6 +49,8 @@ export const withSimulation = ConfigHook('simulation', {
 export default class Simulation {
   constructor(options = {}) {
     this.options = defaults({}, options, DEFAULTS)
+    this.turn = 0
+    this.duration = this.options.duration / this.options.dt
     this.reset()
   }
 
@@ -71,7 +73,7 @@ export default class Simulation {
     while (to_infect && tries) {
       const entity = people[Math.floor(Math.random() * people.length)]
       if (entity.status === ENUM.healthy) {
-        entity.status = ENUM.infected
+        this.infect(entity)
         to_infect--
       }
       tries--
@@ -79,6 +81,11 @@ export default class Simulation {
     if (to_infect) {
       console.error("Didn't infect everyone!")
     }
+  }
+
+  infect(entity) {
+    entity.status = ENUM.infected
+    entity.infected_until = this.turn + this.duration * (1.5 - Math.random())
   }
 
   getScatter() {
@@ -90,6 +97,8 @@ export default class Simulation {
       [ENUM.wall]: 'black',
       [ENUM.infected]: '#C62828',
       [ENUM.healthy]: '#81D4FA',
+      [ENUM.recovered]: '#81F481',
+      [ENUM.dead]: '#444',
     }
 
     const scatter = this.board.pieces.map((piece) => {
@@ -115,12 +124,16 @@ export default class Simulation {
 
   step() {
     const pieces = Object.values(this.board.pieces).filter((p) => p.type)
-    const { steps, radius } = this.options
+    const { dt, radius } = this.options
     const { W, H } = this.board
+    this.turn += 1
 
-    const delta = radius * steps
+    const delta = radius * dt
 
     pieces.forEach((p) => {
+      if (p.status === ENUM.dead) {
+        return
+      }
       p.x += p.dx * delta
       p.y += p.dy * delta
 
@@ -150,41 +163,66 @@ export default class Simulation {
         const dx2 = Math.pow(p1.x - p2.x, 2)
         const dy2 = Math.pow(p1.y - p2.y, 2)
         if (dx2 + dy2 < z) {
-          collide(p1, p2, radius * 2 - Math.sqrt(dx2 + dy2))
+          this.collide(p1, p2, radius * 2 - Math.sqrt(dx2 + dy2))
         }
       })
     })
+
+    pieces.forEach((p) => {
+      if (p.status === ENUM.infected && p.infected_until < this.turn) {
+        p.status =
+          Math.random() < this.options.lethality ? ENUM.dead : ENUM.recovered
+      }
+    })
   }
-}
 
-const collide = (p1, p2, displacement) => {
-  // walk back each ball equal to displacement amount
-  p1.x -= p1.dx * displacement
-  p1.y -= p1.dy * displacement
-  p2.x -= p2.dx * displacement
-  p2.y -= p2.dy * displacement
+  collide(p1, p2, displacement) {
+    // #! TODO this math isn't quite right
+    // walk back each ball equal to displacement amount
+    p1.x -= p1.dx * displacement
+    p1.y -= p1.dy * displacement
+    p2.x -= p2.dx * displacement
+    p2.y -= p2.dy * displacement
 
-  const theta1 = Math.atan2(p1.dy, p1.dx)
-  const theta2 = Math.atan2(p2.dy, p2.dx)
-  const phi = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-  const v1 = Math.sqrt(p1.dx * p1.dx + p1.dy * p1.dy)
-  const v2 = Math.sqrt(p2.dx * p2.dx + p2.dy * p2.dy)
+    if (p1.status === ENUM.dead || p2.status === ENUM.dead) {
+      p1.dx = -p1.dx
+      p1.dy = -p1.dy
+      p2.dx = -p2.dx
+      p2.dy = -p2.dy
+      return
+    }
 
-  p1.dx =
-    v2 * Math.cos(theta2 - phi) * Math.cos(phi) +
-    v1 * Math.sin(theta1 - phi) * Math.cos(phi + Math.PI / 2)
-  p1.dy =
-    v2 * Math.cos(theta2 - phi) * Math.sin(phi) +
-    v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2)
-  p2.dx =
-    v1 * Math.cos(theta1 - phi) * Math.cos(phi) +
-    v2 * Math.sin(theta2 - phi) * Math.cos(phi + Math.PI / 2)
-  p2.dy =
-    v1 * Math.cos(theta1 - phi) * Math.sin(phi) +
-    v2 * Math.sin(theta2 - phi) * Math.sin(phi + Math.PI / 2)
-  if (p1.status === ENUM.infected && p2.status === ENUM.healthy) {
-    p2.status = ENUM.infected
-  } else if (p2.status === ENUM.infected && p1.status === ENUM.healthy) {
-    p1.status = ENUM.infected
+    const theta1 = Math.atan2(p1.dy, p1.dx)
+    const theta2 = Math.atan2(p2.dy, p2.dx)
+    const phi = Math.atan2(p2.y - p1.y, p2.x - p1.x)
+    const v1 = Math.sqrt(p1.dx * p1.dx + p1.dy * p1.dy)
+    const v2 = Math.sqrt(p2.dx * p2.dx + p2.dy * p2.dy)
+
+    p1.dx =
+      v2 * Math.cos(theta2 - phi) * Math.cos(phi) +
+      v1 * Math.sin(theta1 - phi) * Math.cos(phi + Math.PI / 2)
+    p1.dy =
+      v2 * Math.cos(theta2 - phi) * Math.sin(phi) +
+      v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2)
+    p2.dx =
+      v1 * Math.cos(theta1 - phi) * Math.cos(phi) +
+      v2 * Math.sin(theta2 - phi) * Math.cos(phi + Math.PI / 2)
+    p2.dy =
+      v1 * Math.cos(theta1 - phi) * Math.sin(phi) +
+      v2 * Math.sin(theta2 - phi) * Math.sin(phi + Math.PI / 2)
+    if (p1.status === ENUM.infected && p2.status === ENUM.healthy) {
+      this.infect(p2)
+    } else if (p2.status === ENUM.infected && p1.status === ENUM.healthy) {
+      this.infect(p1)
+    }
+  }
+
+  getCounts() {
+    const counts = {}
+    const entries = Object.entries(ENUM)
+    entries.forEach(([key, value]) => {
+      counts[key] = this.board.pieces.filter((p) => p.status === value).length
+    })
+    return counts
   }
 }
