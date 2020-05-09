@@ -1,8 +1,7 @@
 import { defaults, range, sortBy } from 'lodash'
 import ENUM from './enum'
-import ConfigHook from './ConfigHook'
-import Board from './board/continuous'
 import sprites from './sprite'
+import Random from '@unrest/random'
 
 const MAX_TRIES = 50
 
@@ -16,54 +15,23 @@ export const DEFAULTS = {
   dt: 1,
 }
 
-export const schema = {
-  type: 'object',
-  properties: {
-    people: { type: 'integer' },
-    infected: { type: 'integer' },
-    lethality: { type: 'number' },
-    duration: { type: 'integer' },
-    size: { type: 'integer' },
-    radius: { type: 'integer' },
-    dt: { type: 'number' },
-  },
-}
-
-const actions = {
-  onSave(store, formData) {
-    if (store.state.simulation) {
-      store.state.simulation.stop()
-    }
-    const simulation = new Simulation(formData)
-    store.setState({ step: 0, simulation })
-    window.INTERVAL = setInterval(() => store.actions.step(), 10)
-  },
-  step(store) {
-    const start = new Date().valueOf()
-    store.state.simulation.step()
-    store.setState({ step: store.state.step + 1 })
-  },
-}
-
-export const withSimulation = ConfigHook('simulation', {
-  initial: DEFAULTS,
-  schema,
-  actions,
-})
-
 export default class Simulation {
   constructor(options = {}) {
     this.options = defaults({}, options, DEFAULTS)
+    this.random = new Random(this.options.seed)
     this.turn = 0
     this.duration = this.options.duration / this.options.dt
+    this.wall_width = 1
+    this.W = this.H = this.options.size
     this.reset()
   }
 
   animate() {
     this.sprites = sprites()
     this.temp_canvas = document.createElement('canvas')
-    this.temp_canvas.width = this.board.W + this.options.radius * 2
-    this.temp_canvas.height = this.board.H + this.options.radius * 2
+    this.temp_canvas.width = this.W + this.options.radius * 2
+    this.temp_canvas.height = this.H + this.options.radius * 2
+
     this.frame = 0
     this.animationFrame = requestAnimationFrame(this.draw)
   }
@@ -71,11 +39,20 @@ export default class Simulation {
     cancelAnimationFrame(this.animationFrame)
   }
 
+  newPiece(piece) {
+    const theta = this.random() * Math.PI * 2
+    piece.x = this.random() * this.W
+    piece.y = this.random() * this.H
+    piece.dx = Math.cos(theta)
+    piece.dy = Math.sin(theta)
+    this.pieces.push(piece)
+  }
+
   reset() {
-    this.board = new Board(this.options)
+    this.pieces = []
 
     range(1, this.options.people + 1).forEach((id) =>
-      this.board.newPiece({
+      this.newPiece({
         id,
         type: 'person',
         status: ENUM.healthy,
@@ -84,11 +61,9 @@ export default class Simulation {
 
     let to_infect = this.options.infected
     let tries = MAX_TRIES
-    const people = Object.values(this.board.pieces).filter(
-      (p) => p.type === 'person',
-    )
+    const people = Object.values(this.pieces).filter((p) => p.type === 'person')
     while (to_infect && tries) {
-      const entity = people[Math.floor(Math.random() * people.length)]
+      const entity = this.random.choice(people)
       if (entity.status === ENUM.healthy) {
         this.infect(entity)
         to_infect--
@@ -102,7 +77,7 @@ export default class Simulation {
 
   infect(entity) {
     entity.status = ENUM.infected
-    entity.infected_until = this.turn + this.duration * (1.5 - Math.random())
+    entity.infected_until = this.turn + this.duration * (1.5 - this.random())
   }
 
   getScatter() {
@@ -118,7 +93,7 @@ export default class Simulation {
       [ENUM.dead]: '#444',
     }
 
-    const scatter = this.board.pieces.map((piece) => {
+    const scatter = this.pieces.map((piece) => {
       return {
         x: piece.x,
         y: piece.y,
@@ -134,15 +109,15 @@ export default class Simulation {
 
   getDomain() {
     return {
-      x: [this.board.wall_width - 1, this.board.W],
-      y: [this.board.wall_width - 1, this.board.H],
+      x: [this.wall_width - 1, this.W],
+      y: [this.wall_width - 1, this.H],
     }
   }
 
   step() {
-    const pieces = Object.values(this.board.pieces).filter((p) => p.type)
+    const pieces = Object.values(this.pieces).filter((p) => p.type)
     const { dt, radius } = this.options
-    const { W, H } = this.board
+    const { W, H } = this
     this.turn += 1
 
     const delta = radius * dt
@@ -188,7 +163,7 @@ export default class Simulation {
     pieces.forEach((p) => {
       if (p.status === ENUM.infected && p.infected_until < this.turn) {
         p.status =
-          Math.random() < this.options.lethality ? ENUM.dead : ENUM.recovered
+          this.random() < this.options.lethality ? ENUM.dead : ENUM.recovered
       }
     })
     this.draw()
@@ -239,7 +214,7 @@ export default class Simulation {
     const counts = {}
     const entries = Object.entries(ENUM)
     entries.forEach(([key, value]) => {
-      counts[key] = this.board.pieces.filter((p) => p.status === value).length
+      counts[key] = this.pieces.filter((p) => p.status === value).length
     })
     return counts
   }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { withSimulation } from './simulation'
+import withSimulation from './withSimulation'
 import css from '@unrest/css'
 const ref = React.createRef(null)
 
