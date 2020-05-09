@@ -6,13 +6,13 @@ import Random from '@unrest/random'
 const MAX_TRIES = 50
 
 export const DEFAULTS = {
-  people: 5,
+  people: 200,
   infected: 1,
   lethality: 0.1,
-  duration: 10,
+  duration: 100,
   size: 500,
-  radius: 7,
-  dt: 1,
+  radius: 5,
+  dt: 0.1,
 }
 
 export default class Simulation {
