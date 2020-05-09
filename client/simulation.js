@@ -122,7 +122,8 @@ export default class Simulation {
 
     const delta = radius * dt
 
-    pieces.forEach((p) => {
+    for (let i = 0; i < pieces.length; i++) {
+      const p = pieces[i]
       if (p.status === ENUM.dead) {
         return
       }
@@ -146,26 +147,26 @@ export default class Simulation {
         p.y = H
         p.dy = -Math.abs(p.dy)
       }
-    })
+    }
 
     // check collisions
     const z = 4 * radius * radius
-    pieces.forEach((p1, i) => {
-      pieces.slice(i + 1).forEach((p2) => {
+    for (let i1=0; i1 < pieces.length; i1++) {
+      const p1 = pieces[i1]
+      for (let i2=i1+1; i2 < pieces.length; i2++) {
+        const p2 = pieces[i2]
         const dx2 = Math.pow(p1.x - p2.x, 2)
         const dy2 = Math.pow(p1.y - p2.y, 2)
         if (dx2 + dy2 < z) {
           this.collide(p1, p2, radius * 2 - Math.sqrt(dx2 + dy2))
         }
-      })
-    })
-
-    pieces.forEach((p) => {
-      if (p.status === ENUM.infected && p.infected_until < this.turn) {
-        p.status =
+      }
+      if (p1.status === ENUM.infected && p1.infected_until < this.turn) {
+        p1.status =
           this.random() < this.options.lethality ? ENUM.dead : ENUM.recovered
       }
-    })
+    }
+
     this.draw()
   }
 
