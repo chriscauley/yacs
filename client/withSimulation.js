@@ -20,12 +20,11 @@ const actions = {
       store.state.simulation.stop()
     }
     const simulation = new Simulation(formData)
-    simulation.animate()
+    simulation.start(store)
     store.setState({ step: 0, simulation })
-    window.INTERVAL = setInterval(() => store.actions.step(), 10)
   },
   step(store) {
-    store.state.simulation.step()
+    // this is just here to trigger reflow in react
     store.setState({ step: store.state.step + 1 })
   },
 }

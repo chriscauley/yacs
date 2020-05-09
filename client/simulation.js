@@ -26,7 +26,11 @@ export default class Simulation {
     this.reset()
   }
 
-  animate() {
+  start(store) {
+    this.store = store
+    this.started = new Date().valueOf()
+
+    // prep animations
     this.sprites = sprites()
     this.temp_canvas = document.createElement('canvas')
     this.temp_canvas.width = this.W + this.options.radius * 2
@@ -133,7 +137,7 @@ export default class Simulation {
       }
     }
 
-    this.draw()
+    this.store && this.store.actions.step()
   }
 
   collide(p1, p2, displacement) {
@@ -183,12 +187,19 @@ export default class Simulation {
     entries.forEach(([key, value]) => {
       counts[key] = this.pieces.filter((p) => p.status === value).length
     })
+
+    // counts and frame are the same
+    // counts.turn = this.turn
+    counts.frame = this.frame
+    const now = new Date().valueOf()
+    counts.fps = Math.floor((1000 * this.frame) / (now - this.started))
     return counts
   }
 
   draw = () => {
     cancelAnimationFrame(this.animationFrame)
     this.animationFrame = requestAnimationFrame(this.draw)
+    this.step()
     this.frame++
     if (!this.canvas || this.frame % 2 !== 0) {
       return
