@@ -1,4 +1,4 @@
-import { defaults, range, sortBy } from 'lodash'
+import { defaults, range } from 'lodash'
 import ENUM from './enum'
 import sprites from './sprite'
 import Random from '@unrest/random'
@@ -80,40 +80,6 @@ export default class Simulation {
     entity.infected_until = this.turn + this.duration * (1.5 - this.random())
   }
 
-  getScatter() {
-    const SYMBOLS = {
-      [ENUM.wall]: 'square',
-      person: 'circle',
-    }
-    const FILLS = {
-      [ENUM.wall]: 'black',
-      [ENUM.infected]: '#C62828',
-      [ENUM.healthy]: '#81D4FA',
-      [ENUM.recovered]: '#81F481',
-      [ENUM.dead]: '#444',
-    }
-
-    const scatter = this.pieces.map((piece) => {
-      return {
-        x: piece.x,
-        y: piece.y,
-        symbol: SYMBOLS[piece.type || piece],
-        size: this.options.radius,
-        fill: FILLS[piece.status === undefined ? piece : piece.status],
-        id: piece.id,
-      }
-    })
-    const s2 = sortBy(scatter, 'id')
-    return s2
-  }
-
-  getDomain() {
-    return {
-      x: [this.wall_width - 1, this.W],
-      y: [this.wall_width - 1, this.H],
-    }
-  }
-
   step() {
     const pieces = Object.values(this.pieces).filter((p) => p.type)
     const { dt, radius } = this.options
@@ -122,10 +88,10 @@ export default class Simulation {
 
     const delta = radius * dt
 
-    for (let i = 0; i < pieces.length; i++) {
-      const p = pieces[i]
+    for (let index = 0; index < pieces.length; index++) {
+      const p = pieces[index]
       if (p.status === ENUM.dead) {
-        return
+        continue
       }
       p.x += p.dx * delta
       p.y += p.dy * delta
@@ -151,9 +117,9 @@ export default class Simulation {
 
     // check collisions
     const z = 4 * radius * radius
-    for (let i1=0; i1 < pieces.length; i1++) {
+    for (let i1 = 0; i1 < pieces.length; i1++) {
       const p1 = pieces[i1]
-      for (let i2=i1+1; i2 < pieces.length; i2++) {
+      for (let i2 = i1 + 1; i2 < pieces.length; i2++) {
         const p2 = pieces[i2]
         const dx2 = Math.pow(p1.x - p2.x, 2)
         const dy2 = Math.pow(p1.y - p2.y, 2)
@@ -221,6 +187,8 @@ export default class Simulation {
   }
 
   draw = () => {
+    cancelAnimationFrame(this.animationFrame)
+    this.animationFrame = requestAnimationFrame(this.draw)
     this.frame++
     if (!this.canvas || this.frame % 2 !== 0) {
       return
