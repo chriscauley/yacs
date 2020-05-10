@@ -4,6 +4,9 @@ import sprites from './sprite'
 import Random from '@unrest/random'
 
 const MAX_TRIES = 50
+const SAMPLE_RATE = 1000
+const COLLISION_SKIP = 4
+const FRAME_SKIP = 2
 
 export const DEFAULTS = {
   people: 200,
@@ -107,7 +110,15 @@ export default class Simulation {
       }
       p.x += Math.cos(p.angle) * delta
       p.y += Math.sin(p.angle) * delta
+    }
 
+    // check collision every other frame fro efficiency
+    if (this.turn % COLLISION_SKIP) {
+      return
+    }
+
+    for (let index = 0; index < pieces.length; index++) {
+      const p = pieces[index]
       // left/right wall check
       if (p.x < 0) {
         p.x = 0
@@ -192,7 +203,7 @@ export default class Simulation {
     this.animationFrame = requestAnimationFrame(this.draw)
     this.step()
     this.frame++
-    if (!this.canvas || this.frame % 2 !== 0) {
+    if (!this.canvas || this.frame % FRAME_SKIP !== 0) {
       return
     }
     const ctx = this.temp_canvas.getContext('2d')
