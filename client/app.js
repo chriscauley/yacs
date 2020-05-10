@@ -17,7 +17,6 @@ const App = () => {
               <Sidebar />
             </div>
             <div className="w-2/3 px-2">
-              <Route path="/:simulation_number/" component={Home} />
               <Route exact path="/" component={Home} />
             </div>
           </div>

@@ -146,24 +146,11 @@ export default class Simulation {
     }
 
     this.store && this.store.actions.step()
+    this.afterStep && this.afterStep()
   }
 
   collide(p1, p2) {
-    // reverse trajectories until balls are no longer touching.
-    let i = 10
-    while (i--) {
-      const dx2 = Math.pow(p1.x - p2.x, 2)
-      const dy2 = Math.pow(p1.y - p2.y, 2)
-      const displacement = this.options.radius * 2 - Math.sqrt(dx2 + dy2)
-      p1.x -= (Math.cos(p1.angle) * displacement) / 2
-      p1.y -= (Math.sin(p1.angle) * displacement) / 2
-      p2.x -= (Math.cos(p2.angle) * displacement) / 2
-      p2.y -= (Math.sin(p2.angle) * displacement) / 2
-      if (displacement < 0.1) {
-        break
-      }
-    }
-
+    separate(p1, p2, this.options.radius)
     const dx = p1.x - p2.x
     const dy = p1.y - p2.y
     const n_angle = Math.atan(dy / dx) - Math.PI / 2
@@ -225,4 +212,24 @@ function angleReflect(incidenceAngle, surfaceAngle) {
   const tau = Math.PI * 2
   const a = surfaceAngle * 2 - incidenceAngle
   return a >= tau ? a - tau : a < 0 ? a + tau : a
+}
+
+export const separate = (p1, p2, radius) => {
+  // makes p1 and p2 exactly 2 * radius apart because overlapping pieces become stuck
+  if (p1.x > p2.x) {
+    const temp = p1
+    p1 = p2
+    p2 = temp
+  }
+  const dx = p1.x - p2.x
+  const dy = p1.y - p2.y
+  const distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))
+  const move_xy = radius - distance / 2
+  const n_angle = Math.atan(dy / dx)
+  const move_x = Math.cos(n_angle) * move_xy
+  const move_y = Math.sin(n_angle) * move_xy
+  p1.x -= move_x
+  p1.y -= move_y
+  p2.x += move_x
+  p2.y += move_y
 }
