@@ -7,8 +7,8 @@ const FILLS = {
   [ENUM.recovered]: '#81F481',
   [ENUM.dead]: '#000000',
 }
-const lineWidth = 1
 const radius = 30
+const lineWidth = radius / 4
 
 export default () => {
   const images = {}
@@ -17,7 +17,7 @@ export default () => {
     canvas.width = canvas.height = radius * 2
     const ctx = canvas.getContext('2d')
     ctx.arc(radius, radius, radius - lineWidth / 2, 0, 2 * Math.PI, false)
-    ctx.fillStyle = Color(color).alpha(0.75).string()
+    ctx.fillStyle = Color(color).lighten(0.1).alpha(0.8).string()
     ctx.fill()
     ctx.lineWidth = lineWidth
     ctx.strokeStyle = color
