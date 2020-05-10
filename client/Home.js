@@ -26,6 +26,7 @@ export default withSimulation(function Home(props) {
       <canvas
         width={simulation.temp_canvas.width}
         height={simulation.temp_canvas.height}
+        className="border"
         ref={ref}
       />
     </div>

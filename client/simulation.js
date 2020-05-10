@@ -44,11 +44,9 @@ export default class Simulation {
   }
 
   newPiece(piece) {
-    const theta = this.random() * Math.PI * 2
     piece.x = this.random() * this.W
     piece.y = this.random() * this.H
-    piece.dx = Math.cos(theta)
-    piece.dy = Math.sin(theta)
+    piece.angle = this.random() * 2 * Math.PI
     this.pieces.push(piece)
   }
 
@@ -62,6 +60,16 @@ export default class Simulation {
         status: ENUM.healthy,
       }),
     )
+
+    // really useful for debugging
+    // const p0 = this.pieces[0]
+    // const p1 = this.pieces[1]
+
+    // p0.y = 50
+    // p1.y = 200
+    // p0.x = 200 + this.options.radius
+    // p1.x = 200
+    // p1.angle = p0.angle = Math.PI/2
 
     let to_infect = this.options.infected
     let tries = MAX_TRIES
@@ -97,25 +105,25 @@ export default class Simulation {
       if (p.status === ENUM.dead) {
         continue
       }
-      p.x += p.dx * delta
-      p.y += p.dy * delta
+      p.x += Math.cos(p.angle) * delta
+      p.y += Math.sin(p.angle) * delta
 
       // left/right wall check
       if (p.x < 0) {
         p.x = 0
-        p.dx = Math.abs(p.dx)
+        p.angle = Math.PI - p.angle
       } else if (p.x > W) {
         p.x = W
-        p.dx = -Math.abs(p.dx)
+        p.angle = Math.PI - p.angle
       }
 
       // top bottom wall check
       if (p.y < 0) {
+        p.angle = -p.angle
         p.y = 0
-        p.dy = Math.abs(p.dy)
       } else if (p.y > H) {
         p.y = H
-        p.dy = -Math.abs(p.dy)
+        p.angle = -p.angle
       }
     }
 
@@ -128,7 +136,7 @@ export default class Simulation {
         const dx2 = Math.pow(p1.x - p2.x, 2)
         const dy2 = Math.pow(p1.y - p2.y, 2)
         if (dx2 + dy2 < z) {
-          this.collide(p1, p2, radius * 2 - Math.sqrt(dx2 + dy2))
+          this.collide(p1, p2)
         }
       }
       if (p1.status === ENUM.infected && p1.infected_until < this.turn) {
@@ -140,13 +148,28 @@ export default class Simulation {
     this.store && this.store.actions.step()
   }
 
-  collide(p1, p2, displacement) {
-    // #! TODO this math isn't quite right
-    // walk back each ball equal to displacement amount
-    p1.x -= p1.dx * displacement
-    p1.y -= p1.dy * displacement
-    p2.x -= p2.dx * displacement
-    p2.y -= p2.dy * displacement
+  collide(p1, p2) {
+    // reverse trajectories until balls are no longer touching.
+    let i = 10
+    while (i--) {
+      const dx2 = Math.pow(p1.x - p2.x, 2)
+      const dy2 = Math.pow(p1.y - p2.y, 2)
+      const displacement = this.options.radius * 2 - Math.sqrt(dx2 + dy2)
+      p1.x -= (Math.cos(p1.angle) * displacement) / 2
+      p1.y -= (Math.sin(p1.angle) * displacement) / 2
+      p2.x -= (Math.cos(p2.angle) * displacement) / 2
+      p2.y -= (Math.sin(p2.angle) * displacement) / 2
+      if (displacement < 0.1) {
+        break
+      }
+    }
+
+    const dx = p1.x - p2.x
+    const dy = p1.y - p2.y
+    const n_angle = Math.atan(dy / dx) - Math.PI / 2
+
+    p1.angle = angleReflect(p1.angle, n_angle)
+    p2.angle = angleReflect(p2.angle, n_angle)
 
     if (p1.status === ENUM.dead || p2.status === ENUM.dead) {
       p1.dx = -p1.dx
@@ -156,24 +179,6 @@ export default class Simulation {
       return
     }
 
-    const theta1 = Math.atan2(p1.dy, p1.dx)
-    const theta2 = Math.atan2(p2.dy, p2.dx)
-    const phi = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-    const v1 = Math.sqrt(p1.dx * p1.dx + p1.dy * p1.dy)
-    const v2 = Math.sqrt(p2.dx * p2.dx + p2.dy * p2.dy)
-
-    p1.dx =
-      v2 * Math.cos(theta2 - phi) * Math.cos(phi) +
-      v1 * Math.sin(theta1 - phi) * Math.cos(phi + Math.PI / 2)
-    p1.dy =
-      v2 * Math.cos(theta2 - phi) * Math.sin(phi) +
-      v1 * Math.sin(theta1 - phi) * Math.sin(phi + Math.PI / 2)
-    p2.dx =
-      v1 * Math.cos(theta1 - phi) * Math.cos(phi) +
-      v2 * Math.sin(theta2 - phi) * Math.cos(phi + Math.PI / 2)
-    p2.dy =
-      v1 * Math.cos(theta1 - phi) * Math.sin(phi) +
-      v2 * Math.sin(theta2 - phi) * Math.sin(phi + Math.PI / 2)
     if (p1.status === ENUM.infected && p2.status === ENUM.healthy) {
       this.infect(p2)
     } else if (p2.status === ENUM.infected && p1.status === ENUM.healthy) {
@@ -188,8 +193,7 @@ export default class Simulation {
       counts[key] = this.pieces.filter((p) => p.status === value).length
     })
 
-    // counts and frame are the same
-    // counts.turn = this.turn
+    counts.turn = this.turn
     counts.frame = this.frame
     const now = new Date().valueOf()
     counts.fps = Math.floor((1000 * this.frame) / (now - this.started))
@@ -214,4 +218,11 @@ export default class Simulation {
     ctx2.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height)
     ctx2.drawImage(this.temp_canvas, 0, 0)
   }
+}
+
+function angleReflect(incidenceAngle, surfaceAngle) {
+  // https://stackoverflow.com/a/54442598
+  const tau = Math.PI * 2
+  const a = surfaceAngle * 2 - incidenceAngle
+  return a >= tau ? a - tau : a < 0 ? a + tau : a
 }
