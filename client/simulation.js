@@ -32,6 +32,7 @@ export default class Simulation {
 
   start(store) {
     this.store = store
+    this.playing = true
     this.started = new Date().valueOf()
 
     // prep animations
@@ -44,6 +45,7 @@ export default class Simulation {
     this.animationFrame = requestAnimationFrame(this.draw)
   }
   stop() {
+    this.playing = false
     cancelAnimationFrame(this.animationFrame)
   }
 

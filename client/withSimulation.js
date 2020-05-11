@@ -15,11 +15,20 @@ export const schema = {
 }
 
 const actions = {
-  onSave(store, formData) {
+  onSave: (store) => store.actions.newSimulation(),
+  stop: (store) => {
+    store.state.simulation.stop()
+    store.actions.step()
+  },
+  start: (store) => {
+    store.state.simulation.start()
+    store.actions.step()
+  },
+  newSimulation(store) {
     if (store.state.simulation) {
       store.state.simulation.stop()
     }
-    const simulation = new Simulation(formData)
+    const simulation = new Simulation(store.state.formData)
     simulation.start(store)
     store.setState({ step: 0, simulation })
   },

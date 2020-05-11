@@ -4,7 +4,6 @@ import { HashRouter, Route } from 'react-router-dom'
 
 import ConfigForm from './ConfigForm'
 import Home from './Home'
-import Sidebar from './Sidebar'
 import Nav from './Nav'
 
 const App = () => {
@@ -13,14 +12,7 @@ const App = () => {
       <HashRouter>
         <Nav />
         <div className="p-4" style={{ minHeight: 'calc(100vh - 230px)' }}>
-          <div className="flex -mx-2">
-            <div className="w-1/3 px-2">
-              <Sidebar />
-            </div>
-            <div className="w-2/3 px-2">
-              <Route exact path="/" component={Home} />
-            </div>
-          </div>
+          <Route exact path="/" component={Home} />
         </div>
       </HashRouter>
       <ConfigForm />
