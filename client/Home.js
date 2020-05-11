@@ -6,7 +6,7 @@ import { FILLS } from './sprite'
 import css from '@unrest/css'
 const ref = React.createRef(null)
 
-const stat_order = ['dead', 'infected', 'recovered', 'healthy']
+const stat_order = ['infected', 'recovered', 'healthy', 'dead']
 const colorScale = stat_order.map((c) => FILLS[c])
 
 const SimulationControls = withSimulation((props) => {
@@ -20,15 +20,20 @@ const SimulationControls = withSimulation((props) => {
   }
   return (
     <div>
-      {simulation.playing ? (
-        <button className={css.button()} onClick={actions.stop}>
-          <i className={css.icon('pause')} /> Pause Simulation
-        </button>
-      ) : (
-        <button className={css.button()} onClick={actions.start}>
-          <i className={css.icon('play')} /> Unpause Simulation
-        </button>
-      )}
+      <div className="mb-2">
+        {simulation.playing ? (
+          <button className={css.button()} onClick={actions.stop}>
+            <i className={css.icon('pause')} /> Pause Simulation
+          </button>
+        ) : (
+          <button className={css.button()} onClick={actions.start}>
+            <i className={css.icon('play')} /> Unpause Simulation
+          </button>
+        )}
+      </div>
+      <button className={css.button()} onClick={actions.newSimulation}>
+        <i className={css.icon('refresh')} /> Restart Simulation
+      </button>
     </div>
   )
 })
@@ -40,16 +45,18 @@ const SimulationStats = withStats((props) => {
   }
   const x_max = Math.max(stats.history.length, 50)
   return (
-    <div>
-      <div className="mb-4">
+    <div className="flex flex-col justify-between h-full">
+      <div className="flex">
         <SimulationControls />
-        {stat_order.map((name) => (
-          <div key={name}>
-            {name}: {stats.last[name]}
-          </div>
-        ))}
+        <div className="ml-4">
+          {stat_order.map((name) => (
+            <div key={name}>
+              {name}: {stats.last[name]}
+            </div>
+          ))}
+        </div>
       </div>
-      <div style={{ width: 300 }}>
+      <div>
         {x_max > 0 && (
           <VictoryStack colorScale={colorScale} padding={0}>
             {stat_order.map((name) => (
@@ -83,7 +90,7 @@ const SimulationCanvas = withStats(
 
 export default function Home() {
   return (
-    <div className="flex -mx-3">
+    <div className="flex">
       <div className="w-1/2 p-4">
         <SimulationStats />
       </div>

@@ -26,7 +26,7 @@ export default class Simulation {
     this.turn = 0
     this.duration = this.options.duration / this.options.dt
     this.wall_width = 1
-    this.H = this.options.size
+    this.H = this.options.size - this.options.radius
     this.W = this.H
     this.reset()
   }

@@ -8,15 +8,15 @@ import Nav from './Nav'
 
 const App = () => {
   return (
-    <div className="container mx-auto">
+    <>
       <HashRouter>
         <Nav />
-        <div className="p-4" style={{ minHeight: 'calc(100vh - 230px)' }}>
+        <div className="app-content">
           <Route exact path="/" component={Home} />
         </div>
       </HashRouter>
       <ConfigForm />
-    </div>
+    </>
   )
 }
 
