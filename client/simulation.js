@@ -4,7 +4,7 @@ import sprites from './sprite'
 import Random from '@unrest/random'
 
 const MAX_TRIES = 50
-const SAMPLE_RATE = 1000
+const SAMPLE_RATE = 100
 const COLLISION_SKIP = 4
 const FRAME_SKIP = 2
 
@@ -20,6 +20,7 @@ export const DEFAULTS = {
 
 export default class Simulation {
   constructor(options = {}) {
+    window.SIM = this
     this.options = defaults({}, options, DEFAULTS)
     this.random = new Random(this.options.seed)
     this.turn = 0
@@ -55,6 +56,7 @@ export default class Simulation {
 
   reset() {
     this.pieces = []
+    this.stats = []
 
     range(1, this.options.people + 1).forEach((id) =>
       this.newPiece({
@@ -156,6 +158,7 @@ export default class Simulation {
       }
     }
 
+    this.recordStats()
     this.store && this.store.actions.step()
     this.afterStep && this.afterStep()
   }
@@ -215,6 +218,23 @@ export default class Simulation {
     const ctx2 = this.canvas.getContext('2d')
     ctx2.clearRect(0, 0, this.temp_canvas.width, this.temp_canvas.height)
     ctx2.drawImage(this.temp_canvas, 0, 0)
+  }
+
+  recordStats() {
+    const time = new Date().valueOf()
+    const samples = (time - this.started) / SAMPLE_RATE
+    if (
+      !this.pieces.find((p) => p.status === ENUM.infected) ||
+      this.stats.length > samples
+    ) {
+      return
+    }
+    this.last_stat = time
+    const result = { time }
+    Object.entries(ENUM).forEach(([key, value]) => {
+      result[key] = this.pieces.filter((p) => p.status === value).length
+    })
+    this.stats.push(result)
   }
 }
 

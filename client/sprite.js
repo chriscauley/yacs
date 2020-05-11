@@ -1,26 +1,34 @@
 import ENUM from './enum'
 import Color from 'color'
 
-const FILLS = {
-  [ENUM.infected]: '#C62828',
-  [ENUM.healthy]: '#81D4FA',
-  [ENUM.recovered]: '#81F481',
-  [ENUM.dead]: '#000000',
+const COLORS = {
+  infected: '#C62828',
+  healthy: '#81D4FA',
+  recovered: '#81F481',
+  dead: '#000000',
 }
+
+export const STROKES = {}
+export const FILLS = {}
+Object.entries(COLORS).forEach(([key, color]) => {
+  STROKES[ENUM[key]] = STROKES[key] = COLORS[ENUM[key]] = color
+  FILLS[ENUM[key]] = FILLS[key] = Color(color).lighten(0.1).alpha(0.8).string()
+})
+
 const radius = 30
 const lineWidth = radius / 4
 
 export default () => {
   const images = {}
-  Object.entries(FILLS).forEach(([key, color]) => {
+  Object.keys(COLORS).forEach((key) => {
     const canvas = document.createElement('canvas')
     canvas.width = canvas.height = radius * 2
     const ctx = canvas.getContext('2d')
     ctx.arc(radius, radius, radius - lineWidth / 2, 0, 2 * Math.PI, false)
-    ctx.fillStyle = Color(color).lighten(0.1).alpha(0.8).string()
+    ctx.fillStyle = FILLS[key]
     ctx.fill()
     ctx.lineWidth = lineWidth
-    ctx.strokeStyle = color
+    ctx.strokeStyle = STROKES[key]
     ctx.stroke()
 
     const img = document.createElement('img')
