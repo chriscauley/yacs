@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { HashRouter, Route } from 'react-router-dom'
 
+import ConfigForm from './ConfigForm'
 import Home from './Home'
 import Sidebar from './Sidebar'
 import Nav from './Nav'
@@ -22,6 +23,7 @@ const App = () => {
           </div>
         </div>
       </HashRouter>
+      <ConfigForm />
     </div>
   )
 }
