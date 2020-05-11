@@ -57,6 +57,7 @@ export default class Simulation {
   reset() {
     this.pieces = []
     this.stats = []
+    this.last_stat = {}
 
     range(1, this.options.people + 1).forEach((id) =>
       this.newPiece({
@@ -223,18 +224,14 @@ export default class Simulation {
   recordStats() {
     const time = new Date().valueOf()
     const samples = (time - this.started) / SAMPLE_RATE
-    if (
-      !this.pieces.find((p) => p.status === ENUM.infected) ||
-      this.stats.length > samples
-    ) {
+    if (this.last_stat.infected === 0 || this.stats.length > samples) {
       return
     }
-    this.last_stat = time
-    const result = { time }
+    this.last_stat = { time }
     Object.entries(ENUM).forEach(([key, value]) => {
-      result[key] = this.pieces.filter((p) => p.status === value).length
+      this.last_stat[key] = this.pieces.filter((p) => p.status === value).length
     })
-    this.stats.push(result)
+    this.stats.push(this.last_stat)
   }
 }
 
