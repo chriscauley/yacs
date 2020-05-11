@@ -26,7 +26,8 @@ export default class Simulation {
     this.turn = 0
     this.duration = this.options.duration / this.options.dt
     this.wall_width = 1
-    this.W = this.H = this.options.size
+    this.H = this.options.size
+    this.W = this.H
     this.reset()
   }
 
@@ -58,8 +59,8 @@ export default class Simulation {
 
   reset() {
     this.pieces = []
-    this.stats = []
-    this.last_stat = {}
+    this.stats = { history: [], last: {} }
+    Object.keys(ENUM).forEach((key) => (this.stats[key] = []))
 
     range(1, this.options.people + 1).forEach((id) =>
       this.newPiece({
@@ -226,14 +227,20 @@ export default class Simulation {
   recordStats() {
     const time = new Date().valueOf()
     const samples = (time - this.started) / SAMPLE_RATE
-    if (this.last_stat.infected === 0 || this.stats.length > samples) {
+    if (this.stats.last.infected === 0 || this.stats.history.length > samples) {
       return
     }
-    this.last_stat = { time }
-    Object.entries(ENUM).forEach(([key, value]) => {
-      this.last_stat[key] = this.pieces.filter((p) => p.status === value).length
+    this.stats.last = { time }
+    Object.entries(ENUM).forEach(([key, status]) => {
+      const value = this.pieces.filter((p) => p.status === status).length
+      this.stats[key].push({
+        y: value,
+        x: this.turn,
+      })
+      this.stats.last[key] = value
     })
-    this.stats.push(this.last_stat)
+    this.stats.history.push(this.stats.last)
+    this.setStats && this.setStats(this.stats)
   }
 }
 
