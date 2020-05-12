@@ -1,6 +1,6 @@
 import React from 'react'
 import { range } from 'lodash'
-import ConfigHook from './ConfigHook'
+import ConfigHook from '@unrest/react-config-hook'
 import { VictoryLine, VictoryChart } from 'victory'
 
 const resolution = 0.3

@@ -1285,6 +1285,11 @@
   resolved "https://registry.yarnpkg.com/@unrest/random/-/random-0.0.2.tgz#18b9541043accd36fb39ebd0286ff154564b8c70"
   integrity sha512-apUNVqvzPO1QLdAIkDHXn79dy1MlYyopQWBva9+sZ13HomIwRin0KvjgUSt+Fi997DWsqI+MJ7kLTRfVQvA1Dw==
 
+"@unrest/react-config-hook@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@unrest/react-config-hook/-/react-config-hook-0.0.1.tgz#972da300ae36c03852da01b0db77721daf88bcc3"
+  integrity sha512-5Tx77vt6nf/rBh/YL2duU7qeT0rCRQz8s4DtjUE6tdaUIoHGmAjKxBnh80X8rNr0q6xdZaIh+OFCJqmUDyvXLw==
+
 "@unrest/react-jsonschema-form@^0.0.1":
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/@unrest/react-jsonschema-form/-/react-jsonschema-form-0.0.1.tgz#d8cbabb02e06781d23fd9ec0b1a986db865b6d47"

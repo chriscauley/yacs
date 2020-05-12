@@ -1,5 +1,5 @@
 import Simulation, { DEFAULTS } from './simulation'
-import ConfigHook from './ConfigHook'
+import ConfigHook from '@unrest/react-config-hook'
 
 export const schema = {
   type: 'object',
