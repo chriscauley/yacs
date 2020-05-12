@@ -1,5 +1,4 @@
 import { defaults, range } from 'lodash'
-import ENUM from './enum'
 import sprites from './sprite'
 import Random from '@unrest/random'
 
@@ -7,6 +6,8 @@ const MAX_TRIES = 50
 const SAMPLE_RATE = 100
 const COLLISION_SKIP = 4
 const FRAME_SKIP = 2
+
+const STATUSES = ['dead', 'healthy', 'recovered', 'infected']
 
 export const DEFAULTS = {
   people: 200,
@@ -60,13 +61,13 @@ export default class Simulation {
   reset() {
     this.pieces = []
     this.stats = { history: [], last: {} }
-    Object.keys(ENUM).forEach((key) => (this.stats[key] = []))
+    STATUSES.forEach((key) => (this.stats[key] = []))
 
     range(1, this.options.people + 1).forEach((id) =>
       this.newPiece({
         id,
         type: 'person',
-        status: ENUM.healthy,
+        status: 'healthy',
       }),
     )
 
@@ -85,7 +86,7 @@ export default class Simulation {
     const people = Object.values(this.pieces).filter((p) => p.type === 'person')
     while (to_infect && tries) {
       const entity = this.random.choice(people)
-      if (entity.status === ENUM.healthy) {
+      if (entity.status === 'healthy') {
         this.infect(entity)
         to_infect--
       }
@@ -97,7 +98,7 @@ export default class Simulation {
   }
 
   infect(entity) {
-    entity.status = ENUM.infected
+    entity.status = 'infected'
     entity.infected_until = this.turn + this.duration * (1.5 - this.random())
   }
 
@@ -111,7 +112,7 @@ export default class Simulation {
 
     for (let index = 0; index < pieces.length; index++) {
       const p = pieces[index]
-      if (p.status === ENUM.dead) {
+      if (p.status === 'dead') {
         continue
       }
       p.x += Math.cos(p.angle) * delta
@@ -156,9 +157,9 @@ export default class Simulation {
           this.collide(p1, p2)
         }
       }
-      if (p1.status === ENUM.infected && p1.infected_until < this.turn) {
+      if (p1.status === 'infected' && p1.infected_until < this.turn) {
         p1.status =
-          this.random() < this.options.lethality ? ENUM.dead : ENUM.recovered
+          this.random() < this.options.lethality ? 'dead' : 'recovered'
       }
     }
 
@@ -176,7 +177,7 @@ export default class Simulation {
     p1.angle = angleReflect(p1.angle, n_angle)
     p2.angle = angleReflect(p2.angle, n_angle)
 
-    if (p1.status === ENUM.dead || p2.status === ENUM.dead) {
+    if (p1.status === 'dead' || p2.status === 'dead') {
       p1.dx = -p1.dx
       p1.dy = -p1.dy
       p2.dx = -p2.dx
@@ -184,18 +185,17 @@ export default class Simulation {
       return
     }
 
-    if (p1.status === ENUM.infected && p2.status === ENUM.healthy) {
+    if (p1.status === 'infected' && p2.status === 'healthy') {
       this.infect(p2)
-    } else if (p2.status === ENUM.infected && p1.status === ENUM.healthy) {
+    } else if (p2.status === 'infected' && p1.status === 'healthy') {
       this.infect(p1)
     }
   }
 
   getCounts() {
     const counts = {}
-    const entries = Object.entries(ENUM)
-    entries.forEach(([key, value]) => {
-      counts[key] = this.pieces.filter((p) => p.status === value).length
+    STATUSES.forEach((status) => {
+      counts[status] = this.pieces.filter((p) => p.status === status).length
     })
 
     counts.turn = this.turn
@@ -231,13 +231,13 @@ export default class Simulation {
       return
     }
     this.stats.last = { time }
-    Object.entries(ENUM).forEach(([key, status]) => {
+    STATUSES.forEach((status) => {
       const value = this.pieces.filter((p) => p.status === status).length
-      this.stats[key].push({
+      this.stats[status].push({
         y: value,
         x: this.turn,
       })
-      this.stats.last[key] = value
+      this.stats.last[status] = value
     })
     this.stats.history.push(this.stats.last)
     this.setStats && this.setStats(this.stats)

@@ -1,4 +1,3 @@
-import ENUM from './enum'
 import Color from 'color'
 
 const COLORS = {
@@ -11,8 +10,8 @@ const COLORS = {
 export const STROKES = {}
 export const FILLS = {}
 Object.entries(COLORS).forEach(([key, color]) => {
-  STROKES[ENUM[key]] = STROKES[key] = COLORS[ENUM[key]] = color
-  FILLS[ENUM[key]] = FILLS[key] = Color(color).lighten(0.1).alpha(0.8).string()
+  STROKES[key] = color
+  FILLS[key] = Color(color).lighten(0.1).alpha(0.8).string()
 })
 
 const radius = 30
