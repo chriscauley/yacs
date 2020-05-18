@@ -4,6 +4,7 @@ const COLORS = {
   infected: '#C62828',
   healthy: '#81D4FA',
   recovered: '#81F481',
+  shelter: '#C6C628',
   dead: '#000000',
 }
 

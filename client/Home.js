@@ -6,7 +6,7 @@ import { FILLS } from './sprite'
 import css from '@unrest/css'
 const ref = React.createRef(null)
 
-const stat_order = ['infected', 'recovered', 'healthy', 'dead']
+const stat_order = ['infected', 'shelter', 'recovered', 'healthy', 'dead']
 const colorScale = stat_order.map((c) => FILLS[c])
 
 const SimulationControls = withSimulation((props) => {

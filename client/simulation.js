@@ -7,7 +7,8 @@ const SAMPLE_RATE = 100
 const COLLISION_SKIP = 4
 const FRAME_SKIP = 2
 
-const STATUSES = ['dead', 'healthy', 'recovered', 'infected']
+const STATUSES = ['dead', 'healthy', 'recovered', 'infected', 'shelter']
+const INFECTABLE = ['healthy', 'shelter']
 
 export const DEFAULTS = {
   people: 200,
@@ -17,6 +18,7 @@ export const DEFAULTS = {
   size: 500,
   radius: 5,
   dt: 0.1,
+  shelter: 0.1,
 }
 
 export default class Simulation {
@@ -71,16 +73,6 @@ export default class Simulation {
       }),
     )
 
-    // really useful for debugging
-    // const p0 = this.pieces[0]
-    // const p1 = this.pieces[1]
-
-    // p0.y = 50
-    // p1.y = 200
-    // p0.x = 200 + this.options.radius
-    // p1.x = 200
-    // p1.angle = p0.angle = Math.PI/2
-
     let to_infect = this.options.infected
     let tries = MAX_TRIES
     const people = Object.values(this.pieces).filter((p) => p.type === 'person')
@@ -95,6 +87,13 @@ export default class Simulation {
     if (to_infect) {
       console.error("Didn't infect everyone!")
     }
+    this.random
+      .shuffle(people.filter((p) => p.status !== 'infected'))
+      .slice(0, Math.round(people.length * this.options.shelter))
+      .forEach((p) => {
+        p.status = 'shelter'
+        p.sheltering = true
+      })
   }
 
   infect(entity) {
@@ -112,7 +111,7 @@ export default class Simulation {
 
     for (let index = 0; index < pieces.length; index++) {
       const p = pieces[index]
-      if (p.status === 'dead') {
+      if (p.status === 'dead' || p.sheltering) {
         continue
       }
       p.x += Math.cos(p.angle) * delta
@@ -185,9 +184,9 @@ export default class Simulation {
       return
     }
 
-    if (p1.status === 'infected' && p2.status === 'healthy') {
+    if (p1.status === 'infected' && INFECTABLE.includes(p2.status)) {
       this.infect(p2)
-    } else if (p2.status === 'infected' && p1.status === 'healthy') {
+    } else if (p2.status === 'infected' && INFECTABLE.includes(p1.status)) {
       this.infect(p1)
     }
   }
