@@ -12,6 +12,7 @@ export const schema = {
     radius: { type: 'integer' },
     dt: { type: 'number' },
     shelter: { type: 'number' },
+    seed: { type: 'integer' },
   },
 }
 

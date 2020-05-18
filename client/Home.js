@@ -6,7 +6,7 @@ import { FILLS } from './sprite'
 import css from '@unrest/css'
 const ref = React.createRef(null)
 
-const stat_order = ['infected', 'shelter', 'recovered', 'healthy', 'dead']
+const stat_order = ['infected', 'dead', 'recovered', 'shelter', 'healthy']
 const colorScale = stat_order.map((c) => FILLS[c])
 
 const SimulationControls = withSimulation((props) => {
@@ -56,7 +56,11 @@ const SimulationStats = withStats((props) => {
           ))}
         </div>
       </div>
-      <div>
+      <div className="relative">
+        <div
+          className="absolute border-b-4 border-red-500 z-10 w-full"
+          style={{ top: '80%' }}
+        />
         {x_max > 0 && (
           <VictoryStack colorScale={colorScale} padding={0}>
             {stat_order.map((name) => (

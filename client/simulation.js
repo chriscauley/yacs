@@ -106,6 +106,9 @@ export default class Simulation {
     const { dt, radius } = this.options
     const { W, H } = this
     this.turn += 1
+    const infected_count = pieces.filter((p) => p.status === 'infected').length
+    const lethality =
+      this.options.lethality * (infected_count > pieces.length * 0.2 ? 10 : 1)
 
     const delta = radius * dt
 
@@ -157,8 +160,7 @@ export default class Simulation {
         }
       }
       if (p1.status === 'infected' && p1.infected_until < this.turn) {
-        p1.status =
-          this.random() < this.options.lethality ? 'dead' : 'recovered'
+        p1.status = this.random() < lethality ? 'dead' : 'recovered'
       }
     }
 
