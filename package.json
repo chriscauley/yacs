@@ -20,7 +20,7 @@
     "@unrest/css": "^0.0.3",
     "@unrest/random": "^0.0.2",
     "@unrest/react-jsonschema-form": "^0.0.1",
-    "@unrest/react-config-hook": "^0.0.1",
+    "@unrest/react-config-hook": "^0.0.2",
     "@unrest/storage": "^0.1.0",
     "@unrest/tailwind": "^0.0.1",
     "classnames": "^2.2.6",

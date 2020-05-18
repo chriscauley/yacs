@@ -39,7 +39,7 @@ const actions = {
 }
 
 export default ConfigHook('simulation', {
-  initial: DEFAULTS,
+  initial: { formData: DEFAULTS },
   schema,
   actions,
 })
