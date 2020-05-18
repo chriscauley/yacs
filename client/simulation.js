@@ -1,9 +1,10 @@
 import { defaults, range } from 'lodash'
+import plotter from './plotter'
 import sprites from './sprite'
 import Random from '@unrest/random'
 
 const MAX_TRIES = 50
-const SAMPLE_RATE = 100
+const SAMPLE_RATE = 10
 const COLLISION_SKIP = 4
 const FRAME_SKIP = 2
 
@@ -41,6 +42,7 @@ export default class Simulation {
 
     // prep animations
     this.sprites = sprites()
+    this.plotter = plotter(this.options.people)
     this.temp_canvas = document.createElement('canvas')
     this.temp_canvas.width = this.W + this.options.radius * 2
     this.temp_canvas.height = this.H + this.options.radius * 2
@@ -242,6 +244,11 @@ export default class Simulation {
     })
     this.stats.history.push(this.stats.last)
     this.setStats && this.setStats(this.stats)
+    this.plotter.plot(
+      this.plotter.status_order.map(
+        (status) => this.pieces.filter((p) => p.status === status).length,
+      ),
+    )
   }
 }
 

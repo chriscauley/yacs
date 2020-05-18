@@ -1,17 +1,15 @@
 import React from 'react'
 import withSimulation from './withSimulation'
 import withStats from './withStats'
-import { VictoryStack, VictoryArea } from 'victory'
-import { FILLS } from './sprite'
 import css from '@unrest/css'
 const ref = React.createRef(null)
 
 const stat_order = ['infected', 'dead', 'recovered', 'shelter', 'healthy']
-const colorScale = stat_order.map((c) => FILLS[c])
 
 const SimulationControls = withSimulation((props) => {
   const { simulation, actions } = props.config
   if (!simulation) {
+    actions.newSimulation()
     return (
       <button className={css.button()} onClick={actions.newSimulation}>
         Start Simulation
@@ -43,7 +41,6 @@ const SimulationStats = withStats((props) => {
   if (!stats.history || stats.history.length === 0) {
     return <SimulationControls />
   }
-  const x_max = Math.max(stats.history.length, 50)
   return (
     <div className="flex flex-col justify-between h-full">
       <div className="flex">
@@ -61,13 +58,7 @@ const SimulationStats = withStats((props) => {
           className="absolute border-b-4 border-red-500 z-10 w-full"
           style={{ top: '80%' }}
         />
-        {x_max > 0 && (
-          <VictoryStack colorScale={colorScale} padding={0}>
-            {stat_order.map((name) => (
-              <VictoryArea key={name} data={stats[name]} />
-            ))}
-          </VictoryStack>
-        )}
+        <img src={window.daturl} style={{ width: '100%', height: 400 }} />
       </div>
     </div>
   )
