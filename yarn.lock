@@ -1285,10 +1285,10 @@
   resolved "https://registry.yarnpkg.com/@unrest/random/-/random-0.0.2.tgz#18b9541043accd36fb39ebd0286ff154564b8c70"
   integrity sha512-apUNVqvzPO1QLdAIkDHXn79dy1MlYyopQWBva9+sZ13HomIwRin0KvjgUSt+Fi997DWsqI+MJ7kLTRfVQvA1Dw==
 
-"@unrest/react-config-hook@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@unrest/react-config-hook/-/react-config-hook-0.0.1.tgz#972da300ae36c03852da01b0db77721daf88bcc3"
-  integrity sha512-5Tx77vt6nf/rBh/YL2duU7qeT0rCRQz8s4DtjUE6tdaUIoHGmAjKxBnh80X8rNr0q6xdZaIh+OFCJqmUDyvXLw==
+"@unrest/react-config-hook@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@unrest/react-config-hook/-/react-config-hook-0.0.2.tgz#18ab5ac3f7f810bfa7bb211192a05955a1990365"
+  integrity sha512-IsLZX83rk6IFB8dnffmDEbitPCtxMjQxDkPKJom2NuMn0sbjMbwSLy7x3ullgoZXpmlJi1LGinitW42evccwGA==
 
 "@unrest/react-jsonschema-form@^0.0.1":
   version "0.0.1"
@@ -4973,9 +4973,9 @@ lodash.uniq@^4.5.0:
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
 lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 log-symbols@^2.2.0:
   version "2.2.0"
